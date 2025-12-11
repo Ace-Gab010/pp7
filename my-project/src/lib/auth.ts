@@ -1,4 +1,4 @@
-export const TOKEN_KEY = "accessToken";
+export const TOKEN_KEY = "token";
 
 export function saveToken(token: string) {
   if (typeof window !== 'undefined') {

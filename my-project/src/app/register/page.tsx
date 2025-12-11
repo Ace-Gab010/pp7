@@ -31,6 +31,9 @@ export default function RegisterPage() {
 
     setLoading(true);
 
+    console.log('API_BASE:', API_BASE);
+    console.log('Attempting register with username:', username);
+
     try {
       if (!API_BASE) {
         setError('Server URL not configured. Set NEXT_PUBLIC_API_BASE_URL in .env.local');
@@ -43,7 +46,9 @@ export default function RegisterPage() {
         body: JSON.stringify({ username, password }),
       });
 
+      console.log('Response status:', res.status);
       const data = await res.json();
+      console.log('Response data:', data);
 
       if (!res.ok) {
         setError(data.message || 'Registration failed');

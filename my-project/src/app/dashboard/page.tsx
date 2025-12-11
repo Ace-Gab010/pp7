@@ -1,10 +1,9 @@
-'use client';
+"use client";
 
-import { getToken } from '@/lib/auth';
-import { jwtDecode } from 'jwt-decode';
-import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { getToken } from "@/lib/auth";
+import { jwtDecode } from "jwt-decode";
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 interface JwtPayload {
   sub: number;
@@ -15,109 +14,77 @@ interface JwtPayload {
 }
 
 export default function DashboardHome() {
-  const router = useRouter();
-  const token = getToken();
-  const [showToken, setShowToken] = useState(false);
-  let username = 'Guest';
-  let userId = '';
+  const [username, setUsername] = useState("Guest");
+  const [token, setToken] = useState<string | null>(null);
 
-  if (token) {
-    try {
-      const decoded = jwtDecode<JwtPayload>(token);
-      username = decoded.username || 'Guest';
-      userId = decoded.sub.toString();
-    } catch (e) {
-      console.error('Token decoding failed:', e);
+  useEffect(() => {
+    const t = getToken();
+    setToken(t);
+
+    if (t) {
+      try {
+        const decoded = jwtDecode<JwtPayload>(t);
+        if (decoded.username) {
+          setUsername(decoded.username);
+        }
+      } catch (e) {
+        console.error("Token decoding failed:", e);
+      }
     }
-  }
+  }, []);
 
-  function handleLogout() {
-    localStorage.removeItem('token');
-    router.push('/login');
-  }
+  const cardClass =
+    "flex flex-col items-center justify-center bg-white/20 backdrop-blur-md p-10 rounded-2xl shadow-2xl";
 
   return (
-    <div className="relative min-h-screen p-8 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#3C5B7C] to-blue-900 animate-gradient z-0"></div>
-      <div className="absolute rounded-full bg-white/10 w-48 h-48 top-1/3 left-10 z-0 blob-a" />
-      <div className="absolute rounded-full bg-blue-500/20 w-60 h-60 bottom-1/4 right-10 z-0 blob-b" />
-      <div className="absolute inset-0 bg-white/5 opacity-10 pointer-events-none z-0"></div>
+    <div className="relative flex flex-col min-h-screen font-sans p-8 overflow-hidden">
+      {/* Animated Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#3C5B7C] to-blue-900 animate-gradient bg-[length:400%_400%] z-0"></div>
 
-      <div className="max-w-2xl mx-auto z-10">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-12 animate-fadeInUp">
-          <div>
-            <h1 className="text-4xl font-bold mb-1 gradient-text">Welcome back</h1>
-            <p className="text-xl text-slate-600">{username}</p>
-          </div>
-        </div>
+      {/* Floating Background Blobs */}
+      <motion.div
+        className="absolute rounded-full bg-white/10 w-48 h-48 top-1/3 left-10 z-0"
+        animate={{ y: [0, 20, 0], x: [0, 20, 0] }}
+        transition={{ duration: 10, repeat: Infinity, repeatType: "mirror" }}
+      />
+      <motion.div
+        className="absolute rounded-full bg-blue-500/20 w-60 h-60 bottom-1/4 right-10 z-0"
+        animate={{ y: [0, -25, 0], x: [0, -25, 0] }}
+        transition={{ duration: 12, repeat: Infinity, repeatType: "mirror" }}
+      />
 
-        {/* Main Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-blue-300 p-8 mb-6 animate-fadeInUp">
-          <div className="space-y-6">
-            {/* User Info */}
-            <div>
-              <h2 className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-4">
-                Account Info
-              </h2>
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <p className="text-sm text-slate-600 mb-1">Username</p>
-                  <p className="text-lg font-medium text-slate-900">{username}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600 mb-1">User ID</p>
-                  <p className="text-lg font-medium text-slate-900 font-mono">{userId}</p>
-                </div>
-              </div>
-            </div>
+      {/* Floating Sparkles */}
+      <motion.div
+        className="absolute w-2 h-2 rounded-full bg-white/30 top-20 left-1/4 z-0"
+        animate={{ x: [0, 30, 0], y: [0, 30, 0] }}
+        transition={{ duration: 6, repeat: Infinity, repeatType: "mirror" }}
+      />
+      <motion.div
+        className="absolute w-2 h-2 rounded-full bg-white/30 top-1/2 right-1/3 z-0"
+        animate={{ x: [0, -25, 0], y: [0, 20, 0] }}
+        transition={{ duration: 7, repeat: Infinity, repeatType: "mirror" }}
+      />
 
-            {/* Divider */}
-            <div className="h-px bg-blue-200" />
-
-            {/* Token Section */}
-            {token && (
-              <div>
-                <h2 className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-4">
-                  Authentication
-                </h2>
-                <Button
-                  onClick={() => setShowToken(!showToken)}
-                  variant="outline"
-                  className="mb-4 text-sm border-blue-300 text-blue-700 hover:bg-blue-50"
-                >
-                  {showToken ? 'Hide Token' : 'Show Token'}
-                </Button>
-                {showToken && (
-                  <div className="bg-slate-900 rounded-md p-4 animate-floatY border border-blue-400">
-                    <p className="text-slate-400 text-xs font-mono break-all font-semibold">
-                      {token}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Quick Links */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <a
-            href="/profile"
-            className="bg-white rounded-lg shadow-sm border border-blue-300 p-6 hover:shadow-md hover:border-blue-400 transition-all"
-          >
-            <h3 className="font-semibold text-slate-900 mb-1">Profile</h3>
-            <p className="text-sm text-slate-600">View and edit your profile</p>
-          </a>
-          <a
-            href="/settings"
-            className="bg-white rounded-lg shadow-sm border border-blue-300 p-6 hover:shadow-md hover:border-blue-400 transition-all"
-          >
-            <h3 className="font-semibold text-slate-900 mb-1">Settings</h3>
-            <p className="text-sm text-slate-600">Manage your account settings</p>
-          </a>
-        </div>
+      {/* Main Dashboard Card */}
+      <div className="flex flex-col items-center justify-center flex-grow z-20">
+        <motion.div
+          className={cardClass}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1 }}
+        >
+          <h1 className="text-5xl font-black text-white mb-2 tracking-wide">Welcome, {username}</h1>
+          {token && (
+            <>
+              <p className="text-white font-semibold mt-2 mb-1">Your Bearer Token:</p>
+              <pre className="p-2 bg-slate-100 text-xs text-black rounded w-full break-all">{token}</pre>
+            </>
+          )}
+        </motion.div>
       </div>
+
+      {/* Overlay for subtle effect */}
+      <div className="absolute inset-0 bg-white/5 opacity-10 pointer-events-none z-0"></div>
     </div>
   );
 }
